@@ -1,0 +1,17 @@
+{
+  "id": "riser-chart-manager",
+  "name": "Riser Chart Manager",
+  "short_name": "Riser Charts",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1f2530",
+  "theme_color": "#1f2530",
+  "description": "Arrange your chorus on the risers. Works offline; your data stays on your computer.",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Riser Chart Manager — arrange your chorus on the risers</title>
+<meta name="description" content="A free riser chart tool for chorus and choir directors. Drag singers onto the risers, print a chart everyone can read, track who isn't coming. No account, no upload, no install.">
+<meta property="og:title" content="Riser Chart Manager">
+<meta property="og:description" content="Arrange your chorus on the risers. Free, works offline, and your charts never leave your computer.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#1f2530">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%231f2530%22/%3E%3Cpath d=%22M4 26 Q16 21.5 28 26%22 fill=%22none%22 stroke=%22%23E8508A%22 stroke-width=%222.6%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M3.5 20.5 Q16 15.5 28.5 20.5%22 fill=%22none%22 stroke=%22%232F80C4%22 stroke-width=%222.6%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M3.5 15 Q16 9.5 28.5 15%22 fill=%22none%22 stroke=%22%234E9A3E%22 stroke-width=%222.6%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M4 9.5 Q16 3.5 28 9.5%22 fill=%22none%22 stroke=%22%23EFB008%22 stroke-width=%222.6%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
+<style>
+:root{
+  --ink:#1f2530; --paper:#ffffff; --panel:#f6f8fa; --line:#e2e7ee;
+  --muted:#5c6675; --faint:#8a94a3; --blue:#1B9CD8;
+  --tenor:#E8508A; --lead:#2F80C4; --bari:#4E9A3E; --bass:#EFB008;
+  --sans:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --wrap:1080px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto} *{animation:none!important;transition:none!important}}
+body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:#12628a}
+a:focus-visible,button:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:4px}
+.wrap{width:min(var(--wrap),100% - 44px);margin-inline:auto}
+
+/* ---------- top bar ---------- */
+.top{background:var(--ink);color:#fff}
+.topin{display:flex;align-items:center;gap:12px;padding:14px 0}
+.mark{width:30px;height:30px;flex:0 0 auto}
+.wordmark{font-weight:650;letter-spacing:.01em}
+.ver{font-size:12px;font-weight:600;color:#c6cedb;border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:2px 9px}
+.top .spacer{flex:1}
+.top a{color:#d7dee8;text-decoration:none;font-size:14px;font-weight:600}
+.top a:hover{color:#fff;text-decoration:underline}
+
+/* ---------- hero ---------- */
+.hero{background:var(--ink);color:#fff;padding:22px 0 0;overflow:hidden}
+.eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#9fb0c4;display:flex;align-items:center;gap:9px;margin:0 0 18px}
+.eyebrow::before{content:"";width:34px;height:9px;flex:0 0 auto;
+  background:linear-gradient(90deg,var(--tenor) 0 25%,var(--lead) 25% 50%,var(--bari) 50% 75%,var(--bass) 75% 100%);
+  border-radius:2px}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(2.3rem,5.6vw,4rem);line-height:1.04;letter-spacing:-.012em;margin:0 0 18px;max-width:16ch}
+.lede{font-size:clamp(1.02rem,1.6vw,1.2rem);color:#c3cddb;max-width:56ch;margin:0 0 28px}
+.doors{display:flex;flex-wrap:wrap;gap:14px;align-items:stretch}
+.door{display:block;text-decoration:none;border-radius:12px;padding:14px 20px;min-width:230px;border:1px solid transparent}
+.door b{display:block;font-size:1.02rem;line-height:1.3}
+.door span{display:block;font-size:13px;opacity:.82;font-weight:500;margin-top:2px}
+.door.primary{background:var(--blue);color:#06222f}
+.door.primary:hover{background:#3fb4e8}
+.door.ghost{border-color:rgba(255,255,255,.28);color:#fff}
+.door.ghost:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.5)}
+.browsers{font-size:13px;color:#8fa0b4;margin:16px 0 0}
+.board{margin:34px auto -6px;max-width:1000px}
+.board svg{display:block;width:100%;height:auto}
+.boardcap{text-align:center;font-size:12.5px;color:#7f8fa3;padding:0 0 26px;margin:0}
+
+/* ---------- sections ---------- */
+section{padding:64px 0}
+section.tint{background:var(--panel);border-block:1px solid var(--line)}
+.sec-eyebrow{font-family:var(--sans);font-size:11.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:0 0 10px}
+h2{font-family:var(--serif);font-weight:400;font-size:clamp(1.7rem,3.2vw,2.4rem);line-height:1.15;margin:0 0 14px;letter-spacing:-.01em}
+h3{font-size:1.02rem;margin:0 0 6px;letter-spacing:.005em}
+p{margin:0 0 14px}
+.narrow{max-width:64ch}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:26px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px 22px 20px}
+.card .arc{display:block;margin-bottom:14px}
+.card p{color:var(--muted);font-size:.95rem;margin:0 0 12px}
+.card a{font-weight:650;text-decoration:none}
+.card a:hover{text-decoration:underline}
+.card .note{font-size:13px;color:var(--faint);margin:10px 0 0}
+
+.safe{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px 30px;margin-top:26px}
+.safe div{border-top:2px solid var(--line);padding-top:14px}
+.safe b{display:block;margin-bottom:4px}
+.safe p{color:var(--muted);font-size:.93rem;margin:0}
+
+.does{list-style:none;padding:0;margin:26px 0 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px 34px}
+.does li{display:flex;gap:12px;align-items:flex-start;font-size:.97rem}
+.does svg{flex:0 0 auto;margin-top:5px}
+.does b{font-weight:650}
+.does span{color:var(--muted)}
+
+.news{background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--lead);border-radius:0 14px 14px 0;padding:22px 24px;margin-top:24px;max-width:70ch}
+.news h3{margin-bottom:10px}
+.news ul{margin:0;padding-left:20px;color:var(--muted)}
+.news li{margin-bottom:8px}
+.news li:last-child{margin-bottom:0}
+
+.tip{display:flex;flex-wrap:wrap;gap:26px;align-items:center;justify-content:space-between}
+.btn-tip{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;font-weight:650;padding:13px 24px;border-radius:12px}
+.btn-tip:hover{background:#2c3646}
+
+footer{background:var(--ink);color:#98a5b6;padding:40px 0;font-size:14px}
+footer a{color:#cfd8e4}
+footer p{margin:0 0 8px}
+@media (max-width:560px){.door{min-width:100%}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="wrap topin">
+    <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#2b3444"/><path d="M4 26 Q16 21.5 28 26" fill="none" stroke="#E8508A" stroke-width="2.6" stroke-linecap="round"/><path d="M3.5 20.5 Q16 15.5 28.5 20.5" fill="none" stroke="#2F80C4" stroke-width="2.6" stroke-linecap="round"/><path d="M3.5 15 Q16 9.5 28.5 15" fill="none" stroke="#4E9A3E" stroke-width="2.6" stroke-linecap="round"/><path d="M4 9.5 Q16 3.5 28 9.5" fill="none" stroke="#EFB008" stroke-width="2.6" stroke-linecap="round"/></svg>
+    <span class="wordmark">Riser Chart Manager</span>
+    <span class="ver">v1.6</span>
+    <span class="spacer"></span>
+    <a href="#support">Support this project ♥</a>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="wrap">
+    <p class="eyebrow">For chorus and choir directors</p>
+    <h1>Arrange your chorus on the risers.</h1>
+    <p class="lede">Drag singers onto the risers, print a chart the back row can actually read, and mark who isn't coming on Saturday. Free to use, free to pass along, and your charts stay on your own computer.</p>
+    <div class="doors">
+      <a class="door primary" href="./app/"><b>Open it in your browser →</b><span>Nothing to install. Works offline afterwards.</span></a>
+      <a class="door ghost" href="./Riser_Chart_Manager.html" download><b>Download the file</b><span>One file for your desktop, or to email a friend.</span></a>
+    </div>
+    <p class="browsers">Works in Chrome, Edge, Firefox and Safari. In Chrome or Edge you can install it from the address bar and it gets its own window and Start-menu icon.</p>
+  </div>
+  <div class="board wrap">
+<svg viewBox="0 0 940 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An overhead view of a chorus arranged on four curved riser rows, with a director slot at the front centre.">
+<path d="M44.0 98.0 Q470.0 44.0 896.0 98.0" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="30" stroke-linecap="round"/>
+<path d="M79.0 172.0 Q470.0 118.0 861.0 172.0" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="30" stroke-linecap="round"/>
+<path d="M79.0 246.0 Q470.0 192.0 861.0 246.0" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="30" stroke-linecap="round"/>
+<path d="M114.0 320.0 Q470.0 266.0 826.0 320.0" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="30" stroke-linecap="round"/>
+<g><rect x="89.0" y="83.0" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#EFB008" stroke-width="2.2"/><rect x="93.0" y="89.0" width="4" height="14" rx="2" fill="#EFB008"/><text x="123.0" y="99.6" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Marilyn</text></g>
+<g><rect x="159.0" y="74.4" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#EFB008" stroke-width="2.2"/><rect x="163.0" y="80.4" width="4" height="14" rx="2" fill="#EFB008"/><text x="193.0" y="91.0" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Deb</text></g>
+<g><rect x="229.0" y="67.5" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#EFB008" stroke-width="2.2"/><rect x="233.0" y="73.5" width="4" height="14" rx="2" fill="#EFB008"/><text x="263.0" y="84.1" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Sue</text></g>
+<g><rect x="299.0" y="62.4" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#EFB008" stroke-width="2.2"/><rect x="303.0" y="68.4" width="4" height="14" rx="2" fill="#EFB008"/><text x="333.0" y="79.0" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Jan</text></g>
+<g><rect x="369.0" y="58.9" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#EFB008" stroke-width="2.2"/><rect x="373.0" y="64.9" width="4" height="14" rx="2" fill="#EFB008"/><text x="403.0" y="75.5" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Carol</text></g>
+<g><rect x="439.0" y="57.2" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#EFB008" stroke-width="2.2"/><rect x="443.0" y="63.2" width="4" height="14" rx="2" fill="#EFB008"/><text x="473.0" y="73.8" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Pat</text></g>
+<g><rect x="509.0" y="57.2" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#EFB008" stroke-width="2.2"/><rect x="513.0" y="63.2" width="4" height="14" rx="2" fill="#EFB008"/><text x="543.0" y="73.8" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Lynn</text></g>
+<g><rect x="579.0" y="58.9" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#EFB008" stroke-width="2.2"/><rect x="583.0" y="64.9" width="4" height="14" rx="2" fill="#EFB008"/><text x="613.0" y="75.5" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Rae</text></g>
+<g><rect x="649.0" y="62.4" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#EFB008" stroke-width="2.2"/><rect x="653.0" y="68.4" width="4" height="14" rx="2" fill="#EFB008"/><text x="683.0" y="79.0" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Bev</text></g>
+<g><rect x="719.0" y="67.5" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#EFB008" stroke-width="2.2"/><rect x="723.0" y="73.5" width="4" height="14" rx="2" fill="#EFB008"/><text x="753.0" y="84.1" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Joan</text></g>
+<g><rect x="789.0" y="74.4" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#EFB008" stroke-width="2.2"/><rect x="793.0" y="80.4" width="4" height="14" rx="2" fill="#EFB008"/><text x="823.0" y="91.0" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Kris</text></g>
+<g><rect x="859.0" y="83.0" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#EFB008" stroke-width="2.2"/><rect x="863.0" y="89.0" width="4" height="14" rx="2" fill="#EFB008"/><text x="893.0" y="99.6" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Nan</text></g>
+<g><rect x="89.0" y="157.0" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#4E9A3E" stroke-width="2.2"/><rect x="93.0" y="163.0" width="4" height="14" rx="2" fill="#4E9A3E"/><text x="123.0" y="173.6" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Dana</text></g>
+<g><rect x="159.0" y="147.6" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#4E9A3E" stroke-width="2.2"/><rect x="163.0" y="153.6" width="4" height="14" rx="2" fill="#4E9A3E"/><text x="193.0" y="164.2" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Ruth</text></g>
+<g><rect x="229.0" y="140.4" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#4E9A3E" stroke-width="2.2"/><rect x="233.0" y="146.4" width="4" height="14" rx="2" fill="#4E9A3E"/><text x="263.0" y="157.0" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Alma</text></g>
+<g><rect x="299.0" y="135.2" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#4E9A3E" stroke-width="2.2"/><rect x="303.0" y="141.2" width="4" height="14" rx="2" fill="#4E9A3E"/><text x="333.0" y="151.8" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Gail</text></g>
+<g><rect x="369.0" y="132.0" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#4E9A3E" stroke-width="2.2"/><rect x="373.0" y="138.0" width="4" height="14" rx="2" fill="#4E9A3E"/><text x="403.0" y="148.6" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Rose</text></g>
+<g><rect x="439.0" y="131.0" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#4E9A3E" stroke-width="2.2"/><rect x="443.0" y="137.0" width="4" height="14" rx="2" fill="#4E9A3E"/><text x="473.0" y="147.6" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Edie</text></g>
+<g><rect x="509.0" y="132.0" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#4E9A3E" stroke-width="2.2"/><rect x="513.0" y="138.0" width="4" height="14" rx="2" fill="#4E9A3E"/><text x="543.0" y="148.6" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Jill</text></g>
+<g><rect x="579.0" y="135.2" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#4E9A3E" stroke-width="2.2"/><rect x="583.0" y="141.2" width="4" height="14" rx="2" fill="#4E9A3E"/><text x="613.0" y="151.8" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Vera</text></g>
+<g><rect x="649.0" y="140.4" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#4E9A3E" stroke-width="2.2"/><rect x="653.0" y="146.4" width="4" height="14" rx="2" fill="#4E9A3E"/><text x="683.0" y="157.0" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Mae</text></g>
+<g><rect x="719.0" y="147.6" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#4E9A3E" stroke-width="2.2"/><rect x="723.0" y="153.6" width="4" height="14" rx="2" fill="#4E9A3E"/><text x="753.0" y="164.2" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">June</text></g>
+<g><rect x="789.0" y="157.0" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#4E9A3E" stroke-width="2.2"/><rect x="793.0" y="163.0" width="4" height="14" rx="2" fill="#4E9A3E"/><text x="823.0" y="173.6" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Faye</text></g>
+<g><rect x="124.0" y="231.0" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#2F80C4" stroke-width="2.2"/><rect x="128.0" y="237.0" width="4" height="14" rx="2" fill="#2F80C4"/><text x="158.0" y="247.6" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Ellen</text></g>
+<g><rect x="194.0" y="221.6" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#2F80C4" stroke-width="2.2"/><rect x="198.0" y="227.6" width="4" height="14" rx="2" fill="#2F80C4"/><text x="228.0" y="238.2" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Tess</text></g>
+<g><rect x="264.0" y="214.4" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#2F80C4" stroke-width="2.2"/><rect x="268.0" y="220.4" width="4" height="14" rx="2" fill="#2F80C4"/><text x="298.0" y="231.0" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Cara</text></g>
+<g><rect x="334.0" y="209.2" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#2F80C4" stroke-width="2.2"/><rect x="338.0" y="215.2" width="4" height="14" rx="2" fill="#2F80C4"/><text x="368.0" y="225.8" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Wren</text></g>
+<g><rect x="404.0" y="206.0" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#2F80C4" stroke-width="2.2"/><rect x="408.0" y="212.0" width="4" height="14" rx="2" fill="#2F80C4"/><text x="438.0" y="222.6" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Iris</text></g>
+<g><rect x="474.0" y="205.0" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#2F80C4" stroke-width="2.2"/><rect x="478.0" y="211.0" width="4" height="14" rx="2" fill="#2F80C4"/><text x="508.0" y="221.6" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Nora</text></g>
+<g><rect x="544.0" y="206.0" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#2F80C4" stroke-width="2.2"/><rect x="548.0" y="212.0" width="4" height="14" rx="2" fill="#2F80C4"/><text x="578.0" y="222.6" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Anne</text></g>
+<g><rect x="614.0" y="209.2" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#2F80C4" stroke-width="2.2"/><rect x="618.0" y="215.2" width="4" height="14" rx="2" fill="#2F80C4"/><text x="648.0" y="225.8" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Cleo</text></g>
+<g><rect x="684.0" y="214.4" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#2F80C4" stroke-width="2.2"/><rect x="688.0" y="220.4" width="4" height="14" rx="2" fill="#2F80C4"/><text x="718.0" y="231.0" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Dot</text></g>
+<g><rect x="754.0" y="221.6" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#2F80C4" stroke-width="2.2"/><rect x="758.0" y="227.6" width="4" height="14" rx="2" fill="#2F80C4"/><text x="788.0" y="238.2" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Lou</text></g>
+<g><rect x="824.0" y="231.0" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#2F80C4" stroke-width="2.2"/><rect x="828.0" y="237.0" width="4" height="14" rx="2" fill="#2F80C4"/><text x="858.0" y="247.6" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Ada</text></g>
+<g><rect x="124.0" y="305.0" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#E8508A" stroke-width="2.2"/><rect x="128.0" y="311.0" width="4" height="14" rx="2" fill="#E8508A"/><text x="158.0" y="321.6" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Kay</text></g>
+<g><rect x="194.0" y="294.7" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#E8508A" stroke-width="2.2"/><rect x="198.0" y="300.7" width="4" height="14" rx="2" fill="#E8508A"/><text x="228.0" y="311.3" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Hope</text></g>
+<g><rect x="264.0" y="287.0" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#E8508A" stroke-width="2.2"/><rect x="268.0" y="293.0" width="4" height="14" rx="2" fill="#E8508A"/><text x="298.0" y="303.6" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Etta</text></g>
+<g><rect x="334.0" y="281.9" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#E8508A" stroke-width="2.2"/><rect x="338.0" y="287.9" width="4" height="14" rx="2" fill="#E8508A"/><text x="368.0" y="298.5" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Rita</text></g>
+<g><rect x="404.0" y="279.3" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#E8508A" stroke-width="2.2"/><rect x="408.0" y="285.3" width="4" height="14" rx="2" fill="#E8508A"/><text x="438.0" y="295.9" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Nell</text></g>
+<g><rect x="474.0" y="279.3" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#E8508A" stroke-width="2.2"/><rect x="478.0" y="285.3" width="4" height="14" rx="2" fill="#E8508A"/><text x="508.0" y="295.9" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Ivy</text></g>
+<g><rect x="544.0" y="281.9" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#E8508A" stroke-width="2.2"/><rect x="548.0" y="287.9" width="4" height="14" rx="2" fill="#E8508A"/><text x="578.0" y="298.5" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Bess</text></g>
+<g><rect x="614.0" y="287.0" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#E8508A" stroke-width="2.2"/><rect x="618.0" y="293.0" width="4" height="14" rx="2" fill="#E8508A"/><text x="648.0" y="303.6" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Sara</text></g>
+<g><rect x="684.0" y="294.7" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#E8508A" stroke-width="2.2"/><rect x="688.0" y="300.7" width="4" height="14" rx="2" fill="#E8508A"/><text x="718.0" y="311.3" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Mim</text></g>
+<g><rect x="754.0" y="305.0" width="62" height="26" rx="13.0" fill="#ffffff" stroke="#E8508A" stroke-width="2.2"/><rect x="758.0" y="311.0" width="4" height="14" rx="2" fill="#E8508A"/><text x="788.0" y="321.6" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11" font-weight="600" fill="#1f2530">Elle</text></g>
+<rect x="426.0" y="357.0" width="88" height="30" rx="15" fill="#1f2530" stroke="#1B9CD8" stroke-width="2.2" stroke-dasharray="0"/>
+<text x="470.0" y="376.0" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="11.5" font-weight="700" letter-spacing=".06em" fill="#ffffff">DIRECTOR</text>
+</svg>
+  </div>
+  <p class="boardcap">An overhead view of the risers — the same thing you'd draw on paper, only you can move people.</p>
+</div>
+
+<section>
+  <div class="wrap">
+    <p class="sec-eyebrow">Two ways to use it</p>
+    <h2>Same program, two front doors.</h2>
+    <p class="narrow">There is only one Riser Chart Manager. You can run it from this page, or keep your own copy — the charts you make are identical either way, and you can move between them by opening the same file.</p>
+    <div class="cards">
+      <div class="card">
+        <svg class="arc" width="66" height="16" viewBox="0 0 66 16" aria-hidden="true"><path d="M2 12 Q33 2 64 12" fill="none" stroke="#2F80C4" stroke-width="3" stroke-linecap="round"/></svg>
+        <h3>Use it in your browser</h3>
+        <p>Open it and start. It keeps working after the internet goes away, and whenever you come back you get the newest version — nothing to download, nothing to swap.</p>
+        <a href="./app/">Open the app →</a>
+        <p class="note">Best if you use one computer and want updates handled for you.</p>
+      </div>
+      <div class="card">
+        <svg class="arc" width="66" height="16" viewBox="0 0 66 16" aria-hidden="true"><path d="M2 12 Q33 2 64 12" fill="none" stroke="#4E9A3E" stroke-width="3" stroke-linecap="round"/></svg>
+        <h3>Download the file</h3>
+        <p>The whole program is a single web-page file. Save it to your desktop and double-click it — no internet needed, ever. Email it to another director and it works for them too.</p>
+        <a href="./Riser_Chart_Manager.html" download>Download Riser_Chart_Manager.html →</a>
+        <p class="note">Best if you move between computers, or want a copy that can't change under you.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tint">
+  <div class="wrap">
+    <p class="sec-eyebrow">If you're wondering whether this is safe</p>
+    <h2>It's a web page. That's the whole thing.</h2>
+    <p class="narrow">Someone probably sent you a file called <b>Riser_Chart_Manager.html</b> and it looked odd — an attachment that isn't a document and isn't a photo. That's fair. Here is exactly what it is and what it does not do.</p>
+    <div class="safe">
+      <div><b>No account, ever</b><p>Nothing to sign up for, no email address, no password, no license key.</p></div>
+      <div><b>Nothing is uploaded</b><p>Your roster and charts are saved as ordinary files in a folder you pick, on your machine. They are never sent anywhere.</p></div>
+      <div><b>Nothing is installed</b><p>It doesn't add programs to your computer or change any settings. Close the tab and it's gone.</p></div>
+      <div><b>It works with the internet off</b><p>Because nothing is on the other end. Unplug the wifi and keep going.</p></div>
+      <div><b>No tracking</b><p>No analytics, no cookies, no ads. This page loads no outside code either.</p></div>
+      <div><b>You can read it yourself</b><p>The program is one plain text file. Anyone who knows how can open it and see every line — there's nowhere for anything to hide.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-eyebrow">What it does</p>
+    <h2>Built from what directors kept asking for.</h2>
+    <ul class="does">
+      <li><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="#E8508A" stroke-width="2.4"/></svg><span><b>Drag singers into place.</b> Curved rows, staggered so heads sit in the window of the row in front, with a marked center line.</span></li>
+      <li><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="#2F80C4" stroke-width="2.4"/></svg><span><b>Print big.</b> The chart fills a landscape page with names sized to be read at arm's length — or print the roster on its own.</span></li>
+      <li><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="#4E9A3E" stroke-width="2.4"/></svg><span><b>Mark who's away.</b> One button, then click the singers who aren't coming to that performance. They gray out on screen and on the printout.</span></li>
+      <li><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="#EFB008" stroke-width="2.4"/></svg><span><b>Keep several charts.</b> Contest, holiday show, a small-group set — each one holds its own riser shape and its own people.</span></li>
+      <li><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="#7E4B9E" stroke-width="2.4"/></svg><span><b>Start from a spreadsheet.</b> Download the roster template, fill it in, import it. Export the whole thing back out any time.</span></li>
+      <li><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="#F0862B" stroke-width="2.4"/></svg><span><b>Any voicing.</b> Barbershop, SATB, SSAA, TTBB, or name your own parts and pick their colors.</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="tint">
+  <div class="wrap">
+    <p class="sec-eyebrow">What's new</p>
+    <h2>Version 1.6 — every chart keeps its own risers.</h2>
+    <div class="news">
+      <h3>Released July 2026</h3>
+      <ul>
+        <li>Each chart now has its own riser shape. Adding or removing spots, or nudging a row sideways, only changes the chart you're working in — your other charts keep their shape and their singers.</li>
+        <li>Setup → Riser shape says which chart it's editing, and has an "Apply this shape to all charts" button for when you do want them to match.</li>
+        <li>The Director marker is now a real spot at the front centre of the board. Drag any singer into it and the chart shows who's directing — handy when it isn't you.</li>
+        <li>The roster fits more singers per column and the names are bigger.</li>
+      </ul>
+    </div>
+    <p style="margin-top:22px"><b>Already have an older copy?</b> If you use it in your browser, you already have this — just reload. If you keep your own file, <a href="./HOW_TO_UPDATE.md">here's how to swap it in</a> without losing anything.</p>
+  </div>
+</section>
+
+<section id="support">
+  <div class="wrap tip">
+    <div class="narrow" style="flex:1 1 380px">
+      <p class="sec-eyebrow">Support this project</p>
+      <h2>Free for every chorus. Tips keep it growing.</h2>
+      <p>Riser Chart Manager is free to use and free to share, and it will stay that way — most choruses are volunteer-run and the last thing a director needs is another subscription. If it saved you an evening of cutting up name cards, you're welcome to leave whatever it was worth to you.</p>
+    </div>
+    <a class="btn-tip" href="https://ko-fi.com/kenscheel" target="_blank" rel="noopener">Leave a tip ♥</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Riser Chart Manager — built for the Oregon Spirit Chorus, shared with anyone who needs it.</p>
+    <p>Questions, bugs, or a feature your chorus needs: <a href="mailto:kazamuki@gmail.com">kazamuki@gmail.com</a></p>
+    <p style="margin-top:16px;color:#6f7d8f">No accounts. No tracking. No cookies. This page loads no outside code.</p>
+  </div>
+</footer>
+
+</body>
+</html>

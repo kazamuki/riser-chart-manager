@@ -1,0 +1,19 @@
+# ── Never publish chorus data ────────────────────────────────────────────────
+# Anything you commit is public FOREVER, even if you delete it in a later commit.
+# Rosters hold real names, phone numbers and email addresses. Keep them out.
+*.riserchart
+*.xlsx
+*.xls
+*.csv
+
+# Test/scratch copies of the app
+*copy*.html
+*test*.html
+*backup*.html
+*~
+
+# Dev noise
+node_modules/
+.DS_Store
+Thumbs.db
+desktop.ini
