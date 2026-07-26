@@ -7,22 +7,29 @@
  *
  * Keep this file tiny. Every line here is a line that can strand someone on an old build.
  */
-const CACHE = "rcm-v1";                 // bump this string to throw away every cached copy
-const SHELL = [
-  "./",
+const CACHE = "rcm-v2";                 // bump this string to throw away every cached copy
+const ASSETS = [
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
-  "./icons/icon-maskable-512.png"
+  "./icons/icon-maskable-512.png",
+  "./icons/icon-180-apple.png"
 ];
 
+/* v2 fix: cache items ONE AT A TIME.
+   cache.addAll() is atomic — a single 404 or flaky response rejects the whole batch and
+   nothing at all gets stored, silently. That is why the first offline test failed.
+   The app HTML is warmed explicitly here so offline works after the FIRST visit, instead
+   of waiting for a second, worker-controlled navigation. */
 self.addEventListener("install", e => {
-  // Pre-cache so the very first offline open works even if nothing was fetched yet.
   e.waitUntil(
-    caches.open(CACHE)
-      .then(c => c.addAll(SHELL))
-      .catch(() => {})                  // a missing icon must never block activation
-      .then(() => self.skipWaiting())
+    caches.open(CACHE).then(async cache => {
+      await Promise.allSettled(ASSETS.map(u => cache.add(new Request(u, { cache: "reload" }))));
+      try {
+        const res = await fetch(new Request("./", { cache: "reload" }));
+        if (res && res.ok) await cache.put("./", res);
+      } catch (err) { /* offline during install — the fetch handler warms it later */ }
+    }).then(() => self.skipWaiting())
   );
 });
 
@@ -48,16 +55,28 @@ self.addEventListener("fetch", e => {
     e.respondWith(
       fetch(new Request(req.url, { cache: "no-cache", credentials: "same-origin" }))
         .then(res => {
-          const copy = res.clone();
-          caches.open(CACHE).then(c => c.put("./", copy)).catch(() => {});
+          if (res && res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE).then(c => c.put("./", copy)).catch(() => {});
+          }
           return res;
         })
         .catch(() => caches.match("./", { ignoreSearch: true })
-                           .then(r => r || caches.match(req)))
+                           .then(r => r || caches.match(req, { ignoreSearch: true }))
+                           .then(r => r || Response.error()))
     );
     return;
   }
 
-  // Icons and manifest → cache first. They never change meaningfully.
-  e.respondWith(caches.match(req).then(r => r || fetch(req)));
+  // Icons and manifest → cache first, then network, storing what the network gives back so
+  // a missed precache repairs itself instead of failing forever.
+  e.respondWith(
+    caches.match(req, { ignoreSearch: true }).then(hit => hit || fetch(req).then(res => {
+      if (res && res.ok) {
+        const copy = res.clone();
+        caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
+      }
+      return res;
+    }))
+  );
 });

@@ -194,3 +194,22 @@ the domain changes. That is deliberate.
   history even after you delete the file, and rosters carry members' phone numbers and email
   addresses. `.gitignore` covers the obvious extensions; don't work on real charts inside the repo
   folder anyway.
+
+---
+
+## 9. Service-worker changelog
+
+**`rcm-v2` (fixes the "offline didn't work" report).** `cache.addAll()` is atomic: one 404 or
+one flaky response rejects the whole batch and stores *nothing*, silently, and the old worker
+swallowed that rejection. Offline then failed even though the worker showed as activated. v2
+caches each asset individually and warms the app HTML explicitly during install, so offline
+works after the first visit and a single missing icon can no longer take the whole cache down.
+
+`app/sw_test.js` drives the worker through a simulated `ServiceWorkerGlobalScope` — install,
+activate, online fetch, offline fetch, cross-origin passthrough, cache purge — because service
+workers can't be exercised by the app's jsdom suite and don't run from `file://` at all. Run it
+with `node sw_test.js`; no dependencies.
+
+**Deploying a worker change takes two reloads, not one.** The currently-installed worker serves
+the first reload while the new one installs; the second reload is controlled by the new worker.
+Verify in DevTools → Application → Cache storage: you should see `rcm-v2` and no `rcm-v1`.
