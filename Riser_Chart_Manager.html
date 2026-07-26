@@ -176,6 +176,7 @@ main{display:flex;flex:1 1 auto;min-height:0}
 .fname .fnote.ok{color:var(--bari)}
 .fname .warn{color:#C2185B;font-size:11px;line-height:1;flex:0 0 auto}
 .fname .fnote.bad{color:#C2185B}
+.fname .fnote.stale{color:var(--orange)}                       /* v4.13 FB-33: the copy is over a week old */
 /* v4.9: version chip — "did the update take?" answerable at a glance */
 .verchip{border:1px solid var(--line2);background:var(--panel);color:var(--muted);border-radius:999px;
   font-family:inherit;font-size:10.5px;font-weight:800;letter-spacing:.02em;padding:3px 8px;cursor:pointer;
@@ -200,6 +201,9 @@ main{display:flex;flex:1 1 auto;min-height:0}
 .openmenu .omi.ghosty{color:var(--faint);font-weight:500;font-size:12px}
 .openmenu .omh{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);padding:7px 9px 2px;font-weight:800}
 .openmenu .omdiv{height:1px;background:var(--line);margin:5px 4px}
+/* v4.13 FB-29: permanent, passive explanation of what Save does in this browser */
+.openmenu .omnote{font-size:11.5px;line-height:1.45;color:var(--muted);padding:4px 9px 7px;max-width:260px}
+.openmenu .omnote[hidden]{display:none}
 .openmenu .omi.red{color:#c23b34}
 .openmenu .omi.red:hover{background:#fdf3f2}
 .btn.heart{color:#d0778f}
@@ -603,6 +607,7 @@ aside{flex:0 0 auto;width:100%;height:min(320px,42vh);min-height:0;border-left:n
   <button class="omi" id="btnOpen" title="Open a .riserchart file (Ctrl+O)">Open…</button>
   <button class="omi" id="btnSaveFile" title="Save to file (Ctrl+S)">Save</button>
   <button class="omi" id="btnSaveAs" title="Save a copy under a new name (Ctrl+Shift+S)">Save as…</button>
+  <div class="omnote" id="fileModeNote" hidden></div>
   <div class="omdiv"></div>
   <button class="omi" id="btnImportRoster">Import roster…</button>
   <button class="omi" id="btnExportCsv">Export roster (.csv)</button>
@@ -664,7 +669,10 @@ aside{flex:0 0 auto;width:100%;height:min(320px,42vh);min-height:0;border-left:n
       </div>
       <div class="hpsec">
         <h4>Your data</h4>
-        <p>Everything lives in this one file and in <code>.riserchart</code> files on your computer — there's no account, no server, and nothing leaves your machine. Work saves automatically in this browser between sessions, and the first time you use <b>File → Save</b> the app remembers your file and keeps writing to it as you work. The filename in the top bar shows the state: <b>Saved 3:42 PM</b> means it's on disk, <b>saving…</b> means it's a second behind, and a <b>⚠</b> means a save failed and you should press Ctrl+S. (Automatic file saving needs Chrome or Edge; in Firefox and Safari you'll see a ● dot instead and should save with Ctrl+S.)</p>
+        <p>Everything lives in this one file and in <code>.riserchart</code> files on your computer — there's no account, no server, and nothing leaves your machine. Your work saves automatically in this browser between sessions, so it's here when you come back.</p>
+        <p><b>In Chrome and Edge</b>, the first time you use <b>File → Save</b> the app remembers your file and keeps writing to it as you work. The filename in the top bar shows the state: <b>Saved 3:42 PM</b> means it's on disk, <b>saving…</b> means it's a second behind, and a <b>⚠</b> means a save failed and you should press Ctrl+S.</p>
+        <p><b>In Firefox and Safari</b>, a web page isn't allowed to write to a file on your disk, so <b>File → Download a copy…</b> is exactly that — a snapshot in your Downloads folder, named with the date so copies stay in order. It does not update itself afterwards, and the top bar says so: <b>copy saved 3:42 PM</b>, or <b>changes since that copy</b> once you've done more work. Download a fresh copy whenever you want a file to keep, print from elsewhere, or send to someone.</p>
+        <p>Either way, the copy in this browser is only as safe as the browser. If yours is set to clear site data when it closes, download a copy before you finish for the day — the top bar will remind you once your newest copy is more than a week old.</p>
         <p>When you open the app fresh, a bar at the top offers the file you last worked in — one click and you're back where you were.</p>
         <p class="hptip">Tip: this app is just a file — drag <code>Riser Chart Manager.html</code> onto your desktop (or pin its browser tab) and it opens like any other app. No install, ever.</p>
       </div>
@@ -673,7 +681,7 @@ aside{flex:0 0 auto;width:100%;height:min(320px,42vh);min-height:0;border-left:n
         <p><b>Ctrl+Z</b> undo (up to 30 steps — placements, staging, spots, roster edits, attendance, images, chart switches and chart operations) · <b>Ctrl+V</b> paste an image onto the board · <b>Delete</b> removes the selected image · <b>Ctrl+S</b> save · <b>Ctrl+Shift+S</b> save as · <b>Ctrl+O</b> open · <b>Esc</b> closes any menu or window (and leaves attendance mode). On a Mac, use ⌘ instead of Ctrl.</p>
       </div>
       <div class="hpsec hpfoot">
-        <p><b>Riser Chart Manager</b> <span class="hpver"></span> — free to use and share with any chorus that needs it. If it saves you some rehearsal time, you can <a id="supportLink" href="https://ko-fi.com/kenscheel" target="_blank" rel="noopener">leave a tip ♥</a>.</p>
+        <p><b>Riser Chart Manager</b> <span class="hpver"></span> — free to use and free to share with any chorus that needs it. If it saves you some rehearsal time, you can <a id="supportLink" href="https://ko-fi.com/kenscheel" target="_blank" rel="noopener">leave a tip ♥</a>.</p>
       </div>
     </div>
   </div>
@@ -895,12 +903,18 @@ aside{flex:0 0 auto;width:100%;height:min(320px,42vh);min-height:0;border-left:n
 
 <script>
 /* ================= DATA ================= */
-const APP_VERSION="1.6";
+const APP_VERSION="1.7";
 const SUPPORT_URL="https://ko-fi.com/kenscheel"; // v4.5: PWYW tip page — linked from File ▾ and the Help footer
 const LS_KEY="riserChartPro.v1";           // product-branch autosave (crash recovery)
 const LS_LASTFILE="riserChartPro.v1.lastFile"; // v4.9 FB-18: {name, ts, clean} marker for the resume bar
 /* v4.9: what's new — plain language, newest first. Entries newer than settings.lastSeenVersion are shown once. */
 const WHATS_NEW=[
+  {v:"1.7", title:"Clearer saving in Firefox and Safari", items:[
+    "If your browser can\u2019t update a file in place, the app now says so plainly instead of showing a filename as though the file were being kept up to date. Your work is still saved here between sessions.",
+    "In those browsers, File \u25be \u2192 Save is now \u201cDownload a copy\u2026\u201d, and copies are named with the date first \u2014 2026-07-26 Oregon Spirit Chorus.riserchart \u2014 so your Downloads folder stays in order instead of filling up with (1), (2), (3).",
+    "The bar you see when you open the app now tells you your work is already here, instead of asking you to go and find a file.",
+    "Chrome and Edge are unchanged: your chart file still keeps itself up to date as you work."
+  ]},
   {v:"1.6", title:"Every chart keeps its own risers", items:[
     "Each chart now has its own riser shape. Adding or removing spots, or nudging a row sideways, only changes the chart you\u2019re working in \u2014 your other charts keep their shape and their singers.",
     "Setup \u2192 Riser shape says which chart it\u2019s editing, and has an \u201cApply this shape to all charts\u201d button for when you do want them to match.",
@@ -999,7 +1013,7 @@ function freshState(opts){
     activeChartId:c0.id,
     settings:{labelMode:"initials",sightline:false,sideCollapsed:false,showCenterLine:true,flipHorizontal:false,
       groups:opts.groups||{enabled:false,label:"Quartets"},
-      onboarded:!!opts.onboarded,lastSeenVersion:APP_VERSION},
+      onboarded:!!opts.onboarded,lastSeenVersion:APP_VERSION,fbNoteSeen:false},
     quartets:[],
     colorsVersion:2,
     dataVersion:1
@@ -1027,6 +1041,7 @@ function migrate(s){
   if(s.settings.showCenterLine===undefined)s.settings.showCenterLine=true; // v4.6 FB-13
   if(!s.settings.groups)s.settings.groups={enabled:true,label:"Quartets"}; // pre-4.1 data always had the tab
   if(s.settings.onboarded===undefined)s.settings.onboarded=true;           // any real data counts as onboarded
+  s.settings.fbNoteSeen=!!s.settings.fbNoteSeen;                           // v4.13: one-time fallback explainer
   s.snapshots=s.snapshots||[];
   // v4.8: chart-scoped attendance opt-out list + free-floating reference images
   s.notComing=Array.isArray(s.notComing)?s.notComing:[];
@@ -1182,7 +1197,8 @@ function contrastText(h){const c=hexToRgb(h);const L=(0.299*c.r+0.587*c.g+0.114*
 function fullName(p){return [p.firstName,p.lastName].filter(Boolean).join(" ");}
 function placedIds(){return new Set(Object.values(state.placement));}
 function slotOf(pid){for(const k in state.placement)if(state.placement[k]===pid)return k;return null;}
-function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),1900);}
+/* v4.13: optional duration — the one-time fallback note is two clauses and 1.9s is not enough to read it. */
+function toast(msg,ms){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),ms||1900);}
 
 /* ================= FILE LAYER (v4.0) =================
    The .riserchart file is the source of truth; localStorage is crash recovery.
@@ -1192,6 +1208,11 @@ const FS_OK = typeof window!=="undefined" && "showOpenFilePicker" in window && "
 const FILE_TYPES=[{description:"Riser chart",accept:{"application/json":[".riserchart",".json"]}}];
 let fileCtx={handle:null,name:null};
 let lastSavedJson=null; // compact serialization at last open/save; null = never saved to a file
+/* v4.13 FB-28: the single source of truth for "is a real file being kept current?".
+   A NAME is not enough — the fallback path sets a name with no handle, and rendering that as
+   "Saved" was the lie this pass removes. Everything user-facing branches on this, not on name. */
+function liveFile(){return FS_OK && !!fileCtx.handle;}
+let lastCopyAt=null;    // when this browser last DOWNLOADED a copy (fallback path only)
 
 /* ---- v4.9 FB-17: file autosave (Option B) ------------------------------------
    Where a handle exists (Chrome/Edge), the .riserchart rewrites itself on an idle
@@ -1201,7 +1222,7 @@ let lastSavedJson=null; // compact serialization at last open/save; null = never
 const AUTOSAVE_MS=1500;
 let autoSaveTimer=null, autoSaveBusy=false, autoSaveQueued=false;
 let lastAutoSaveAt=null, autoSaveErr=false;
-function autoSaveOn(){return FS_OK && !!fileCtx.handle && !autoSaveErr;}
+function autoSaveOn(){return liveFile() && !autoSaveErr;}
 function timeShort(d){
   try{return d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});}
   catch(e){return d.toTimeString().slice(0,5);}
@@ -1242,13 +1263,51 @@ async function runFileAutosave(){
 }
 
 function isDirtyNow(){return lastSavedJson===null || JSON.stringify(state)!==lastSavedJson;}
+/* v4.13: age of the newest downloaded copy, in words a director would use. */
+function copyTime(){
+  if(lastCopyAt)return lastCopyAt.getTime();
+  const last=readLastFile();
+  if(!last)return null;
+  return last.copyTs||last.ts||null;   // pre-0.22 markers only have ts; close enough to be useful
+}
+function copyAgeWords(ts){
+  if(!ts)return "";
+  const d=new Date(ts), now=new Date();
+  if(d.toDateString()===now.toDateString())return timeShort(d);
+  const days=Math.floor((now-d)/86400000);
+  if(days<=1)return "yesterday";
+  return days+" days ago";
+}
+function copyIsStale(ts){return !!ts && (Date.now()-ts)>7*86400000;}   // FB-33
 function renderFileStatus(jsonMaybe){
   const el=$("#fileName");if(!el)return;
   const json=jsonMaybe||JSON.stringify(state);
   const dirty=lastSavedJson===null || json!==lastSavedJson;
-  if(!fileCtx.name){
-    el.innerHTML="No file open";
-    el.title="This work lives only in this browser. Save it to a file (Ctrl+S) for safe-keeping.";
+
+  /* ---- v4.13 FB-28: no handle → no live file. Never borrow save-in-place vocabulary. ---- */
+  if(!liveFile()){
+    if(FS_OK&&!fileCtx.name){                                  // Chrome/Edge, nothing open yet
+      el.innerHTML="No file open";
+      el.title="This work lives only in this browser. Save it to a file (Ctrl+S) for safe-keeping.";
+      return;
+    }
+    const ts=copyTime(), age=copyAgeWords(ts), stale=copyIsStale(ts);
+    const cls="fnote"+(stale?" stale":"");
+    if(!fileCtx.name){                                         // fallback, fresh load
+      el.innerHTML="Saved in this browser"+(age?' <span class="'+cls+'">last copy '+esc(age)+"</span>":"");
+      el.title=ts
+        ? "Your work is saved in this browser. The newest copy you downloaded was "+age+". Use File → Download a copy for an up-to-date file."
+        : "Your work is saved in this browser between sessions. Use File → Download a copy to keep a file you can share or back up.";
+      return;
+    }
+    const nm0=esc(fileCtx.name);
+    if(dirty){
+      el.innerHTML='<span class="dirty">●</span>'+nm0+' <span class="'+cls+'">changes since '+(age?"your copy "+esc(age):"that copy")+"</span>";
+      el.title="Your work is safe in this browser. "+fileCtx.name+" is a copy"+(age?" from "+age:"")+" and does not include these changes — use File → Download a copy for a current one.";
+    }else{
+      el.innerHTML=nm0+' <span class="'+cls+'">copy'+(age?" saved "+esc(age):"")+"</span>";
+      el.title="Your work is saved in this browser. "+fileCtx.name+" is a copy on disk"+(age?" from "+age:"")+"; it does not update by itself.";
+    }
     return;
   }
   const nm=esc(fileCtx.name);
@@ -1269,13 +1328,23 @@ function renderFileStatus(jsonMaybe){
 /* v4.9 FB-18: remember the last file by name so the resume bar works on every browser */
 function noteLastFile(clean){
   if(!fileCtx.name)return;
-  try{localStorage.setItem(LS_LASTFILE,JSON.stringify({name:fileCtx.name,ts:Date.now(),clean:!!clean}));}catch(e){}
+  try{localStorage.setItem(LS_LASTFILE,JSON.stringify({name:fileCtx.name,ts:Date.now(),clean:!!clean,
+    copyTs:lastCopyAt?lastCopyAt.getTime():null}));}catch(e){}
 }
 function readLastFile(){
   try{const r=localStorage.getItem(LS_LASTFILE);if(r){const o=JSON.parse(r);if(o&&o.name)return o;}}catch(e){}
   return null;
 }
-function baseName(n){return (n||"riser-chart").replace(/\.(riserchart|json)$/i,"");}
+/* v4.13 FB-30: strip a leading YYYY-MM-DD stamp as well as the extension, so re-saving a
+   downloaded copy can never accumulate one date per save (2026-08-02 2026-07-26 Name…). */
+function baseName(n){return (n||"riser-chart").replace(/\.(riserchart|json)$/i,"").replace(/^\d{4}-\d{2}-\d{2}[ _-]+/,"").trim()||"riser-chart";}
+/* Date FIRST: copies sort chronologically in any file manager, stay aligned if the chorus name
+   is edited, and ISO order is unambiguous outside the US. Download path only — a handle-backed
+   file updates in place forever, so a date in that name would start lying tomorrow. */
+function stampName(base){
+  const d=new Date(), p=x=>String(x).padStart(2,"0");
+  return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+" "+baseName(base)+".riserchart";
+}
 function downloadText(text,name,mime){
   const blob=new Blob([text],{type:mime||"application/json"});
   const url=URL.createObjectURL(blob);const a=document.createElement("a");
@@ -1298,17 +1367,22 @@ async function saveFile(as=false){
       toast(`Saved ${fileCtx.name}. It will keep itself up to date from now on.`);
     }catch(e){if(e&&e.name==="AbortError")return;console.error(e);toast("Couldn't save the file.");}
   }else{
-    let name=fileCtx.name;
-    if(as||!name){
-      const n=prompt("File name:",baseName(name));
+    /* v4.13: this is a COPY, and the wording, the name and the toast all say so.
+       No prompt on the plain path — clicking "Download a copy…" should produce a file, not a
+       dialog. Ctrl+Shift+S still asks, for people who want to name it themselves. */
+    let base=baseName(fileCtx.name||(state.chorus&&state.chorus.name)||"riser-chart");
+    if(as){
+      const n=prompt("Name for this copy:",base);
       if(!n)return;
-      name=baseName(n.trim())+".riserchart";
+      base=baseName(n.trim());
     }
+    const name=stampName(base);
     downloadText(JSON.stringify(state,null,2),name);
     fileCtx.name=name;
+    lastCopyAt=new Date();
     autoSaveErr=false;
     markCleanNow();
-    toast(`Saved ${name} to your Downloads.`);
+    toast(`Downloaded ${name} — your work also stays in this browser.`,3200);
   }
 }
 
@@ -3047,6 +3121,24 @@ function finishWizard(){
   update();
   toast("You're all set! Add your first singer, or grab the roster template from the File menu.");
 }
+/* v4.13 FB-29/FB-32: relabel the file actions on browsers that cannot write in place, and
+   explain it once out loud plus permanently (and quietly) in the menu itself. */
+function applyFileMode(){
+  if(FS_OK)return;                                    // Chrome/Edge labels are already accurate
+  const sf=$("#btnSaveFile"), sa=$("#btnSaveAs"), note=$("#fileModeNote");
+  if(sf){sf.textContent="Download a copy…";sf.title="Download a .riserchart file you can keep or share (Ctrl+S)";}
+  if(sa)sa.hidden=true;                                // "Save as…" implies a file being written
+  if(note){
+    note.textContent="This browser can’t update a file on your disk, so this downloads a copy. Your work stays saved here between sessions. Chrome and Edge can keep the file itself up to date.";
+    note.hidden=false;
+  }
+}
+function maybeShowFallbackNote(){
+  if(FS_OK||!state.settings||state.settings.fbNoteSeen)return;
+  if(!state.settings.onboarded)return;                 // first run belongs to the wizard
+  state.settings.fbNoteSeen=true;save();
+  setTimeout(()=>toast("In this browser, saving downloads a copy — your work also stays here between sessions. Chrome and Edge can update your chart file in place.",7000),900);
+}
 function openSetup(){renderSetup();$("#setupModal").classList.add("open");}
 function closeSetup(){const m=$("#setupModal");if(m)m.classList.remove("open");}
 /* ================= v4.9 FB-18: resume bar =================
@@ -3064,9 +3156,30 @@ async function showResumeBar(){
   const recents=await getRecents();
   resumeHandle=(recents.find(r=>r.name===last.name)||{}).handle||null;
   const nm=esc(last.name);
-  const line=$("#rbLine"), sub=$("#rbSub"), p=$("#rbPrimary"), sec=$("#rbSecondary");
+  const line=$("#rbLine"), sub=$("#rbSub"), p=$("#rbPrimary"), sec=$("#rbSecondary"), dis=$("#rbDismiss");
   // "not clean" means this browser holds work that never reached the file
   const ahead=last.clean===false;
+  if(dis)dis.hidden=false;
+
+  /* ---- v4.13 FB-31: on browsers with no file handle, the browser copy IS the live one.
+     Leading with "open a file" sent people hunting for a file that was never being written,
+     and every Save minted another download. Lead with the truth instead. ---- */
+  if(!FS_OK){
+    const age=copyAgeWords(last.copyTs||last.ts);
+    bar.classList.remove("caution");
+    line.innerHTML="Your work is here, saved in this browser.";
+    sub.textContent=ahead
+      ? "You\u2019ve made changes since your last copy"+(nm?" of "+last.name:"")+(age?" ("+age+")":"")+"."
+      : "Your last copy was "+last.name+(age?", downloaded "+age:"")+".";
+    p.textContent="Keep working";
+    p.onclick=()=>hideResumeBar();
+    sec.hidden=false;
+    sec.textContent=ahead?"Download a copy now":"Open a file instead…";
+    sec.onclick=()=>{hideResumeBar();ahead?saveFile(false):openFile();};
+    if(dis)dis.hidden=true;                 // "Keep working" already is the dismiss
+    bar.hidden=false;
+    return;
+  }
   bar.classList.toggle("caution",ahead);
   if(ahead){
     line.innerHTML='This browser has changes that were never saved to <span class="rbfile">'+nm+'</span>.';
@@ -3429,6 +3542,9 @@ function wire(){
     r.onload=()=>{
       if(adoptFileText(r.result)){
         fileCtx={handle:null,name:f.name};
+        // v4.13: the file's own mtime is the honest age of this copy — opening a three-week-old
+        // copy should immediately report it as three weeks old, not as "just now".
+        lastCopyAt=new Date(f.lastModified||Date.now());
         markCleanNow();update();toast(`Opened ${f.name}.`);
       }
     };
@@ -3446,7 +3562,11 @@ function wire(){
   });
   window.addEventListener("beforeunload",e=>{
     // only warn when an actual file is open and behind — file-less work persists via autosave
-    if(fileCtx.name&&isDirtyNow()){e.preventDefault();e.returnValue="";}
+    /* v4.13: a live file can genuinely be behind — warn. On the fallback path the work is in
+       browser storage, so a generic "Leave site?" box on every close is noise; warn only when
+       no copy has ever been downloaded, which is the one case with nothing on disk at all. */
+    if(liveFile()){if(isDirtyNow()){e.preventDefault();e.returnValue="";}return;}
+    if(!FS_OK&&!copyTime()&&isDirtyNow()){e.preventDefault();e.returnValue="";}
   });
   // v4.9: don't sit on a pending write while the tab goes away
   document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushFileAutosave();});
@@ -3481,10 +3601,11 @@ function importJSON(e){
 state=load()||freshState();
 activeSnap=state.activeChartId; // v4.9: migrate/freshState guarantee at least one chart
 wire();
+applyFileMode();          // v4.13: label the file actions for THIS browser before anything is shown
 applySideCollapsed();
 update();
 if(!state.settings.onboarded){showWizard();}
-else{maybeShowNews();showResumeBar();}
+else{maybeShowNews();showResumeBar();maybeShowFallbackNote();}
 
 /* v4.12: service worker — ONLY over http(s). Service workers do not exist on file:// and
    registering there throws; the guard is what keeps "one file, two habitats" true.
