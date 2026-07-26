@@ -182,6 +182,14 @@ main{display:flex;flex:1 1 auto;min-height:0}
   font-family:inherit;font-size:10.5px;font-weight:800;letter-spacing:.02em;padding:3px 8px;cursor:pointer;
   flex:0 0 auto;font-variant-numeric:tabular-nums}
 .verchip:hover{color:var(--blue);border-color:var(--blue)}
+/* v4.14 FB-34: install chip. Shown only when beforeinstallprompt fires, which by construction
+   means http(s) + Chromium + a valid manifest + not already installed. Sits with the other
+   meta affordances so it reads as an offer, not an interruption. */
+.instchip{border:1px solid var(--blue);background:#eef7fd;color:#12719c;border-radius:999px;
+  font-family:inherit;font-size:11px;font-weight:800;letter-spacing:.01em;padding:3px 9px;
+  cursor:pointer;flex:0 0 auto;white-space:nowrap}
+.instchip:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+.instchip[hidden]{display:none}
 /* v4.9: resume bar — offers the last-used file on a fresh load */
 #resumeBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
   padding:9px 16px;background:#eef7fd;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--ink)}
@@ -515,6 +523,7 @@ aside{flex:0 0 auto;width:100%;height:min(320px,42vh);min-height:0;border-left:n
       <button class="btn sm ghost icon" id="btnHelp" title="Help — how everything works">?</button>
       <button class="btn sm ghost icon" id="btnGear" title="Setup — risers, parts, branding, backups">⚙</button>
       <button class="btn sm ghost icon heart" id="btnHeart" title="Support this project — Riser Chart Manager is free; tips keep it going">♥</button>
+      <button class="instchip" id="btnInstall" hidden title="Install Riser Chart Manager on this computer — its own window and icon, opens without a browser, works with the internet off, and can keep your chart file up to date">⤓ Install</button>
       <button class="verchip" id="verChip" title="Which version you're running — click to see what's new">v–</button>
     </div>
   </header>
@@ -669,16 +678,18 @@ aside{flex:0 0 auto;width:100%;height:min(320px,42vh);min-height:0;border-left:n
       </div>
       <div class="hpsec">
         <h4>Your data</h4>
-        <p>Everything lives in this one file and in <code>.riserchart</code> files on your computer — there's no account, no server, and nothing leaves your machine. Your work saves automatically in this browser between sessions, so it's here when you come back.</p>
+        <p id="hpDataFile">Everything lives in this one file and in <code>.riserchart</code> files on your computer — there's no account, no server, and nothing leaves your machine. Your work saves automatically in this browser between sessions, so it's here when you come back.</p>
+        <p id="hpDataWeb" hidden>Everything lives in this app and in <code>.riserchart</code> files on your computer — there's no account, no server, and nothing leaves your machine. The app is fetched once and then kept on your computer, so it opens and works with the internet off. Your work saves automatically in this browser between sessions, so it's here when you come back.</p>
         <p><b>In Chrome and Edge</b>, the first time you use <b>File → Save</b> the app remembers your file and keeps writing to it as you work. The filename in the top bar shows the state: <b>Saved 3:42 PM</b> means it's on disk, <b>saving…</b> means it's a second behind, and a <b>⚠</b> means a save failed and you should press Ctrl+S.</p>
         <p><b>In Firefox and Safari</b>, a web page isn't allowed to write to a file on your disk, so <b>File → Download a copy…</b> is exactly that — a snapshot in your Downloads folder, named with the date so copies stay in order. It does not update itself afterwards, and the top bar says so: <b>copy saved 3:42 PM</b>, or <b>changes since that copy</b> once you've done more work. Download a fresh copy whenever you want a file to keep, print from elsewhere, or send to someone.</p>
         <p>Either way, the copy in this browser is only as safe as the browser. If yours is set to clear site data when it closes, download a copy before you finish for the day — the top bar will remind you once your newest copy is more than a week old.</p>
         <p>When you open the app fresh, a bar at the top offers the file you last worked in — one click and you're back where you were.</p>
-        <p class="hptip">Tip: this app is just a file — drag <code>Riser Chart Manager.html</code> onto your desktop (or pin its browser tab) and it opens like any other app. No install, ever.</p>
+        <p class="hptip" id="hpTipFile">Tip: this app is just a file — drag <code>Riser Chart Manager.html</code> onto your desktop (or pin its browser tab) and it opens like any other app. No install, ever.</p>
+        <p class="hptip" id="hpTipWeb" hidden>Tip: in <b>Chrome</b> or <b>Edge</b>, press <b>⤓ Install</b> in the top bar. The app gets its own window and its own icon in your Start menu or Dock, opens without going through a browser, keeps working with the internet off, and can keep your chart file up to date as you work. In <b>Firefox</b> or <b>Safari</b> you can bookmark this page or pin the tab for the same convenience — but those browsers still aren't allowed to write to a file on your disk, installed or not, so saving there stays “download a copy”.</p>
       </div>
       <div class="hpsec">
         <h4>Keyboard shortcuts</h4>
-        <p><b>Ctrl+Z</b> undo (up to 30 steps — placements, staging, spots, roster edits, attendance, images, chart switches and chart operations) · <b>Ctrl+V</b> paste an image onto the board · <b>Delete</b> removes the selected image · <b>Ctrl+S</b> save · <b>Ctrl+Shift+S</b> save as · <b>Ctrl+O</b> open · <b>Esc</b> closes any menu or window (and leaves attendance mode). On a Mac, use ⌘ instead of Ctrl.</p>
+        <p><b>Ctrl+Z</b> undo (up to 30 steps — placements, staging, spots, roster edits, attendance, images, chart switches and chart operations) · <b>Ctrl+V</b> paste an image onto the board · <b>Delete</b> removes the selected image · <span id="hpKeySave"><b>Ctrl+S</b> save</span><span id="hpKeySaveAs"> · <b>Ctrl+Shift+S</b> save as</span> · <b>Ctrl+O</b> open · <b>Esc</b> closes any menu or window (and leaves attendance mode). On a Mac, use ⌘ instead of Ctrl.</p>
       </div>
       <div class="hpsec hpfoot">
         <p><b>Riser Chart Manager</b> <span class="hpver"></span> — free to use and free to share with any chorus that needs it. If it saves you some rehearsal time, you can <a id="supportLink" href="https://ko-fi.com/kenscheel" target="_blank" rel="noopener">leave a tip ♥</a>.</p>
@@ -903,12 +914,18 @@ aside{flex:0 0 auto;width:100%;height:min(320px,42vh);min-height:0;border-left:n
 
 <script>
 /* ================= DATA ================= */
-const APP_VERSION="1.7";
+const APP_VERSION="1.8";
 const SUPPORT_URL="https://ko-fi.com/kenscheel"; // v4.5: PWYW tip page — linked from File ▾ and the Help footer
 const LS_KEY="riserChartPro.v1";           // product-branch autosave (crash recovery)
 const LS_LASTFILE="riserChartPro.v1.lastFile"; // v4.9 FB-18: {name, ts, clean} marker for the resume bar
 /* v4.9: what's new — plain language, newest first. Entries newer than settings.lastSeenVersion are shown once. */
 const WHATS_NEW=[
+  {v:"1.8", title:"Install it like an app", items:[
+    "If you use the web version in Chrome or Edge, an \u2b8b Install button now appears in the top bar. Press it and Riser Chart Manager gets its own window and its own icon in your Start menu or Dock \u2014 no browser tab to hunt for, and it opens even with the internet off.",
+    "Installing is also the version that can keep your chart file up to date as you work, so the one click is worth it.",
+    "The button only appears where it actually helps. Firefox and Safari can give you an icon too \u2014 bookmark the page or pin the tab \u2014 but they still can\u2019t write to a file on your disk, so saving there stays \u201cdownload a copy\u201d.",
+    "Help now describes whichever way you\u2019re running it, and the shortcut list no longer offers Save as\u2026 in browsers that don\u2019t have it."
+  ]},
   {v:"1.7", title:"Clearer saving in Firefox and Safari", items:[
     "If your browser can\u2019t update a file in place, the app now says so plainly instead of showing a filename as though the file were being kept up to date. Your work is still saved here between sessions.",
     "In those browsers, File \u25be \u2192 Save is now \u201cDownload a copy\u2026\u201d, and copies are named with the date first \u2014 2026-07-26 Oregon Spirit Chorus.riserchart \u2014 so your Downloads folder stays in order instead of filling up with (1), (2), (3).",
@@ -3132,6 +3149,10 @@ function applyFileMode(){
     note.textContent="This browser can’t update a file on your disk, so this downloads a copy. Your work stays saved here between sessions. Chrome and Edge can keep the file itself up to date.";
     note.hidden=false;
   }
+  /* v4.14 FB-36: the shortcut list advertised Ctrl+Shift+S — a command 4.13 hid here. */
+  const ks=$("#hpKeySave"), ksa=$("#hpKeySaveAs");
+  if(ks)ks.innerHTML="<b>Ctrl+S</b> download a copy";
+  if(ksa)ksa.hidden=true;
 }
 function maybeShowFallbackNote(){
   if(FS_OK||!state.settings||state.settings.fbNoteSeen)return;
@@ -3287,6 +3308,7 @@ function wire(){
   $("#rbDismiss").addEventListener("click",hideResumeBar);
   $("#btnSupport").addEventListener("click",()=>{window.open(SUPPORT_URL,"_blank","noopener");});
   $("#btnHeart").addEventListener("click",()=>{window.open(SUPPORT_URL,"_blank","noopener");}); // v4.6
+  $("#btnInstall").addEventListener("click",doInstall); // v4.14 FB-34
   $("#hpClose").addEventListener("click",closeHelp);
   $("#helpModal").addEventListener("click",e=>{if(e.target.id==="helpModal")closeHelp();});
   // modal
@@ -3597,11 +3619,65 @@ function importJSON(e){
   r.readAsText(file);e.target.value="";
 }
 
+/* ================= v4.14: INSTALL + HABITAT =================
+   FB-34. The offer is gated on beforeinstallprompt, never on browser sniffing. That event fires
+   only over http(s), only where the manifest validates, and never when the app is already
+   installed — precisely the set of cases where installing buys the user something. Firefox’s
+   Web Apps and Safari’s Add to Dock install from the FAVICON and hand back an ordinary browser
+   profile: no File System Access, so the fallback path either way. Pitching "install for the app
+   experience" there would promise save-in-place that never arrives, which is the same lie 4.13
+   spent a pass removing. Gating on the event gets that right for free and leaves no browser
+   table to rot. */
+const IS_HOSTED = typeof location!=="undefined" && String(location.protocol||"").startsWith("http");
+let installPrompt=null;
+function isStandalone(){
+  try{
+    if(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)return true;
+    if(window.matchMedia&&window.matchMedia("(display-mode: window-controls-overlay)").matches)return true;
+    return navigator.standalone===true;   // iOS Safari
+  }catch(e){return false;}
+}
+function renderInstallChip(){
+  const b=$("#btnInstall");if(!b)return;
+  b.hidden=!(installPrompt&&!isStandalone());
+}
+async function doInstall(){
+  if(!installPrompt)return;
+  const p=installPrompt;
+  /* A beforeinstallprompt can only be prompt()ed once, so there is no re-offer inside this
+     session — Chrome re-fires the event on the next load. Retire the chip either way rather
+     than leaving a button that silently does nothing. */
+  installPrompt=null;renderInstallChip();
+  try{await p.prompt();await p.userChoice;}catch(e){}
+}
+if(typeof window!=="undefined"){
+  window.addEventListener("beforeinstallprompt",e=>{
+    e.preventDefault();          // suppress the browser’s own mini-infobar; the chip is the offer
+    installPrompt=e;renderInstallChip();
+  });
+  window.addEventListener("appinstalled",()=>{
+    installPrompt=null;renderInstallChip();
+    toast("Installed. Look for Riser Chart Manager in your Start menu or Dock — everything you’ve done is still here.",6000);
+  });
+}
+/* FB-35: Help has to describe the habitat it is being read in. "This app is just a file … no
+   install, ever" is true from disk and false three inches from an Install button. */
+function applyHabitat(){
+  const pairs=[["#hpTipFile","#hpTipWeb"],["#hpDataFile","#hpDataWeb"]];
+  pairs.forEach(([f,w])=>{
+    const ef=$(f), ew=$(w);
+    if(ef)ef.hidden=IS_HOSTED;
+    if(ew)ew.hidden=!IS_HOSTED;
+  });
+}
+
 /* ================= BOOT ================= */
 state=load()||freshState();
 activeSnap=state.activeChartId; // v4.9: migrate/freshState guarantee at least one chart
 wire();
 applyFileMode();          // v4.13: label the file actions for THIS browser before anything is shown
+applyHabitat();           // v4.14: and describe the habitat it is actually running in
+renderInstallChip();      // hidden until beforeinstallprompt says otherwise
 applySideCollapsed();
 update();
 if(!state.settings.onboarded){showWizard();}
@@ -3612,7 +3688,11 @@ else{maybeShowNews();showResumeBar();maybeShowFallbackNote();}
    Strategy lives in sw.js: network-first for this HTML, so a reload while online is
    always the newest build. Failure to register is silent and harmless — the app is
    fully functional without it, it just won't open offline from the hosted URL. */
-if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+/* v4.14: `"serviceWorker" in navigator` is TRUE but the object is undefined in a Firefox
+   private window, so the old guard reached .register on undefined and threw a TypeError that
+   the .catch() could not see — a promise handler cannot catch a synchronous throw. Test the
+   object, not the key. */
+if(navigator.serviceWorker && location.protocol.startsWith("http")){
   window.addEventListener("load",()=>{navigator.serviceWorker.register("./sw.js").catch(()=>{});});
 }
 </script>
